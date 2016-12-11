@@ -28,3 +28,4 @@ target
 *.log
 *.hlt
 *.class
+*.jar
