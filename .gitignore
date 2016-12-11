@@ -27,3 +27,4 @@ output
 target
 *.log
 *.hlt
+*.class
