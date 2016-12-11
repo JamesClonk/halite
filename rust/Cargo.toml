@@ -1,0 +1,21 @@
+[package]
+name = "halite bots"
+version = "1.0.0"
+authors = ["JamesClonk <jamesclonk@jamesclonk.ch>"]
+publish = false
+
+[dependencies]
+rand = "*"
+text_io = "*"
+
+[[bin]]
+path = "src/MyBot.rs"
+name = "MyBot"
+
+[[bin]]
+path = "src/RandomBot.rs"
+name = "RandomBot"
+
+[[bin]]
+path = "src/NoIdea.rs"
+name = "NoIdea"

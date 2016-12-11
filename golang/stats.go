@@ -66,7 +66,7 @@ func simulate(battles <-chan []string) {
 	for battle := range battles {
 		blue := battle[0]
 		red := battle[1]
-		command := []string{"./halite", "-q", "-d", "30 30",
+		command := []string{"../halite", "-q", "-d", "30 30",
 			fmt.Sprintf("go run %s/main.go", blue),
 			fmt.Sprintf("go run %s/main.go", red),
 		}
