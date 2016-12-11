@@ -18,8 +18,8 @@ var (
 )
 
 func main() {
-	if len(os.Args) < 4 {
-		fmt.Println("usage: ./stats <iterations> <bot1> <bot2> [<bot3>...]")
+	if len(os.Args) < 5 {
+		fmt.Println("usage: ./stats <iterations> <workers> <bot1> <bot2> [<bot3>...]")
 		os.Exit(1)
 	}
 
@@ -28,11 +28,16 @@ func main() {
 		panic(err)
 	}
 
-	bots := os.Args[2:]
+	workers, err := strconv.ParseInt(os.Args[2], 10, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	bots := os.Args[3:]
 	wins = make(map[string]int, 0)
 	battles := make(chan []string, 0)
 
-	for w := 1; w <= 5; w++ {
+	for w := 1; w <= int(workers); w++ {
 		go simulate(battles)
 	}
 
