@@ -27,7 +27,7 @@ end
 def move(site, loc)
   # go to productive targets first
   target = productive_target(site, loc)
-  return Move.new(loc, target[:dir]) if target != nil && target[:site].strength < site.strength
+  return Move.new(loc, target[:dir]) if target != nil && target[:site].strength <= site.strength
 
   # wait to gather strength
   if site.strength < site.production*5
