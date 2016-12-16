@@ -39,7 +39,9 @@ func move(loc hlt.Location) hlt.Move {
 
 	// go to productive targets
 	do, dir, target := getProductiveTarget(loc)
-	if do && target.Strength < site.Strength {
+	if do &&
+		(target.Strength < site.Strength ||
+			(target.Strength == site.Strength && site.Strength >= 255)) {
 		return hlt.Move{
 			Location:  loc,
 			Direction: dir,

@@ -1,7 +1,5 @@
 #!/bin/bash
 
-export GOPATH="$(pwd)"
-
 rm -f *.log
 rm -f *.hlt
 

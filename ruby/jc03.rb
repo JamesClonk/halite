@@ -16,7 +16,7 @@ def tag
 end
 
 def init
-  $network = Networking.new("jc03")
+  $network = Networking.new("jc03_ruby")
   $tag, $map = network.configure
 end
 

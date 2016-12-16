@@ -124,7 +124,9 @@ func target(loc hlt.Location) *hlt.Move {
 			}
 
 			// find best target we are strong enough to attack
-			if v > value && target.Strength < site.Strength {
+			if v > value &&
+				(target.Strength < site.Strength ||
+					(target.Strength == site.Strength && site.Strength >= 255)) {
 				targetDir = d
 				value = v
 				found = true

@@ -125,7 +125,9 @@ func target(loc hlt.Location) *hlt.Move {
 	}
 
 	// if good target found and cell is strong enough to attack, then do it!
-	if found && targetSite.Strength < site.Strength {
+	if found &&
+		(targetSite.Strength < site.Strength ||
+			(targetSite.Strength == site.Strength && site.Strength >= 255)) {
 		return &hlt.Move{
 			Location:  loc,
 			Direction: targetDir,
