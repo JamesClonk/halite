@@ -27,7 +27,7 @@ end
 def move(site, loc)
   # go to productive targets first
   target = productive_target(site, loc)
-  return Move.new(loc, target[:dir]) if target != nil && target[:site].strength <= site.strength
+  return Move.new(loc, target[:direction]) unless target.nil?
 
   # wait to gather strength
   if site.strength < site.production*5
@@ -41,40 +41,35 @@ def move(site, loc)
   return Move.new(loc, :still)
 end
 
-def productive_target(site, loc)
-  def evalutate(site)
-    return site.production unless site.strength > 0
-    return site.production / site.strength
-  end
+def evaluate_target(target)
+  return (target.production*10.5) / (target.strength+0.5)
+end
 
-  GameMap::DIRECTIONS.map { |dir| {:dir => dir, :site => map.site(loc, dir)} }
-  .select { |cell| cell[:site].owner != tag }
-  .sort_by { |cell| -evalutate(cell[:site]) }
+def productive_target(site, loc)
+  GameMap::DIRECTIONS.map { |dir| {:direction => dir, :site => map.site(loc, dir)} }
+  .select { |cell| cell[:site].owner != tag && cell[:site].strength <= site.strength }
+  .sort_by { |cell| -evaluate_target(cell[:site]) }
   .first
 end
 
 def nearest_border_direction(loc)
-  direction = :north
   max_distance = [map.width, map.height].min / 2
-
-  GameMap::DIRECTIONS.map do |dir|
+  directions = GameMap::DIRECTIONS.map do |direction|
     distance = 0
     current = loc
-    site = map.site(current, dir)
+    site = map.site(current)
 
     while(site.owner == tag && distance < max_distance)
       distance = distance + 1
-      current = map.find_location(current, dir)
-      site = map.site(current, dir)
+      current = map.find_location(current, direction)
+      site = map.site(current)
     end
 
-    if distance < max_distance
-      direction = dir
-      max_distance = distance
-    end
+    {:distance => distance, :direction => direction, :site => site}
   end
 
-  direction
+  directions.sort_by { |cell| [cell[:distance], -cell[:site].production] }
+  .first[:direction]
 end
 
 def at_border(loc)

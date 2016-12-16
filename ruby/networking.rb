@@ -52,6 +52,10 @@ class Networking
     #logger.send(severity, msg)
   end
 
+  def debug(msg, severity = :debug)
+    logger.send(severity, msg)
+  end
+
   private
 
   def init_player_tag
