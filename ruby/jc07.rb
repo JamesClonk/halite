@@ -39,7 +39,7 @@ def update_game
     (0...map.width).each do |x|
       owner = map.site(Location.new(x, y)).owner
       if owner == tag
-        count = count + 1
+        count += 1
       elsif owner != 0
         owners << owner
       end
@@ -95,14 +95,14 @@ def allow_move?(site, loc, dir)
 end
 
 def evaluate_target(target)
-  return (target.production*1.0) unless target.strength > 0
-  return (target.production*1.0) / (target.strength*1.0)
+  return (target[:site].production*1.0) unless target[:site].strength > 0
+  return (target[:site].production*1.0) / (target[:site].strength*1.0)
 end
 
 def productive_target(site, loc)
-  target = GameMap::DIRECTIONS.map { |dir| {:direction => dir, :site => map.site(loc, dir)} }
+  target = GameMap::DIRECTIONS.map { |dir| {:direction => dir, :site => map.site(loc, dir), :location => map.find_location(loc, dir)} }
   .select { |cell| cell[:site].owner != tag }
-  .sort_by { |cell| -evaluate_target(cell[:site]) }
+  .sort_by { |cell| -evaluate_target(cell) }
   .first
 
   return {:attack => false} if target.nil?
@@ -115,12 +115,12 @@ def productive_target(site, loc)
 end
 
 def help_production(site, loc)
-  target = GameMap::DIRECTIONS.map { |dir| {:direction => dir, :site => map.site(loc, dir)} }
+  target = GameMap::DIRECTIONS.map { |dir| {:direction => dir, :site => map.site(loc, dir), :location => map.find_location(loc, dir)} }
   .select { |cell|
     cell[:site].owner == tag &&
     cell[:site].production > site.production && # go to higher production location
     cell[:site].strength+site.strength <= 260 &&
-    at_border?(map.find_location(loc, cell[:direction])) } # only help cells which are at a border, not "inland"
+    at_border?(cell[:location]) } # only help cells which are at a border, not "inland"
   .sort_by { |cell| -cell[:site].production }
   .first
 
@@ -129,12 +129,12 @@ def help_production(site, loc)
 end
 
 def help_strength(site, loc)
-  target = GameMap::DIRECTIONS.map { |dir| {:direction => dir, :site => map.site(loc, dir)} }
+  target = GameMap::DIRECTIONS.map { |dir| {:direction => dir, :site => map.site(loc, dir), :location => map.find_location(loc, dir)} }
   .select { |cell|
     cell[:site].owner == tag &&
     cell[:site].strength > site.strength && # weaker cells should reinforce stronger ones
     cell[:site].strength+site.strength <= 260 &&
-    at_border?(map.find_location(loc, cell[:direction])) } # only help cells which are at a border, not "inland"
+    at_border?(cell[:location]) } # only help cells which are at a border, not "inland"
   .sort_by { |cell| -cell[:site].production }
   .first
 
@@ -152,11 +152,11 @@ def nearest_border_direction(loc)
 
     # maybe find alternative route if we can't move in this direction anyway?
     if site.strength + map.site(loc).strength > 260
-      distance = distance + 1
+      distance += 1
     end
 
     while(site.owner == tag && distance < max_distance)
-      distance = distance + 1
+      distance += 1
       current = map.find_location(current, direction)
       site = map.site(current)
     end
