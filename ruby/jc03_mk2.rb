@@ -29,7 +29,7 @@ def move(site, loc)
   target = productive_target(loc)
   if target[:ok] &&
     (target[:site].strength < site.strength ||
-      (target[:site].strength == site.strength && site.strength >= 255))
+      (target[:site].strength == site.strength && site.strength >= 250))
     return Move.new(loc, target[:dir])
   end
 
@@ -43,10 +43,6 @@ def move(site, loc)
 
   # can't attack, hold still
   return Move.new(loc, :still)
-end
-
-def evaluate_target(target)
-  return (target.production*10.5) / (target.strength+0.5)
 end
 
 def productive_target(loc)
@@ -76,26 +72,23 @@ def productive_target(loc)
 end
 
 def nearest_border_direction(loc)
-  direction = :north
   max_distance = [map.width, map.height].min / 2
 
-  GameMap::DIRECTIONS.each do |d|
+  GameMap::DIRECTIONS.map do |direction|
     distance = 0
     current = loc
-    site = map.site(current, d)
+    site = map.site(current, direction)
 
-    while(site.owner == tag && distance <= max_distance)
+    while(site.owner == tag && distance < max_distance)
       distance = distance + 1
-      current = map.find_location(current, d)
-      site = map.site(current, d)
+      current = map.find_location(current, direction)
+      site = map.site(current)
     end
 
-    if distance < max_distance
-      direction = d
-      max_distance = distance
-    end
+    {:distance => distance, :direction => direction, :site => site}
   end
-  return direction
+  .sort_by { |cell| [cell[:distance], -cell[:site].production] }
+  .first[:direction]
 end
 
 def at_border(loc)
