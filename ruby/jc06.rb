@@ -37,7 +37,7 @@ def update_game
 
   (0...map.height).each do |y|
     (0...map.width).each do |x|
-      owner = map.content[x][y].owner
+      owner = map.site(Location.new(x, y)).owner
       if owner == tag
         count = count + 1
       elsif owner != 0
@@ -56,7 +56,7 @@ def move(site, loc)
   return Move.new(loc, target[:direction]) if target[:attack]
 
   # wait to gather more strength
-  return Move.new(loc, :still) if needs_more_strength?(site)
+  return nil if needs_more_strength?(site)
 
   # lets go to the nearest border
   if !at_border?(loc)
@@ -71,7 +71,7 @@ def move(site, loc)
   return Move.new(loc, help[:direction]) if help[:help]
 
   # can't attack, hold still
-  return Move.new(loc, :still)
+  return nil
 end
 
 def needs_more_strength?(site)
@@ -180,7 +180,8 @@ def main
         site = map.site(loc)
 
         if site.owner == tag
-          moves << move(site, loc)
+          move = move(site, loc)
+          moves << move unless move.nil?
         end
       end
     end

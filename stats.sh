@@ -9,4 +9,4 @@ rm -f */*.hlt
 
 #go run stats.go 10 8 'cd golang;go run jc04/main.go' 'cd ruby;ruby jc03_mk2.rb' 'cd ruby;ruby jc04_mk2.rb'
 #go run stats.go 10 8 'cd golang;go run jc04/main.go' 'cd ruby;ruby jc04_mk2.rb' 'cd ruby;ruby jc06.rb'
-go run stats.go 20 8 'cd golang;go run jc04/main.go' 'cd ruby;ruby jc06.rb'
+go run stats.go 10 8 'cd golang;go run jc04/main.go' 'cd ruby;ruby jc06.rb'
