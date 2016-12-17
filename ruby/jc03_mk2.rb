@@ -16,7 +16,7 @@ def tag
 end
 
 def init
-  $network = Networking.new("jc03_ruby")
+  $network = Networking.new("jc03_mk2")
   $tag, $map = network.configure
 end
 
@@ -86,8 +86,7 @@ def at_border(loc)
 end
 
 def main
-  $network = Networking.new("jc03")
-  $tag, $map = network.configure
+  init
 
   while true
     moves = []

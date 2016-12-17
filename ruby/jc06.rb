@@ -16,7 +16,7 @@ def tag
 end
 
 def init
-  $network = Networking.new("jc04_mk2")
+  $network = Networking.new("jc06")
   $tag, $map = network.configure
 end
 
@@ -37,12 +37,25 @@ def move(site, loc)
   # does a cell around me need help?
   help = help_strength(site, loc)
   return Move.new(loc, help[:direction]) if help[:help]
+  help = help_production(site, loc)
+  return Move.new(loc, help[:direction]) if help[:help]
 
   # lets go to the nearest border
-  return Move.new(loc, nearest_border_direction(loc)) unless at_border(loc)
+  if !at_border?(loc)
+    border_dir = nearest_border_direction(loc)
+    return Move.new(loc, border_dir) if allow_move?(site, loc, border_dir)
+  end
 
   # can't attack, hold still
   return Move.new(loc, :still)
+end
+
+def allow_move?(site, loc, dir)
+  target = map.site(loc, dir)
+  if target.owner == tag
+    site.strength + target.strength <= 260
+  end
+  return target.strength <= site.strength
 end
 
 def evaluate_target(target)
@@ -65,19 +78,19 @@ def productive_target(site, loc)
   return {:attack => true, :direction => target[:direction], :site => target[:site]}
 end
 
-# def help_production(site, loc)
-#   target = GameMap::DIRECTIONS.map { |dir| {:direction => dir, :site => map.site(loc, dir)} }
-#   .select { |cell|
-#     cell[:site].owner == tag &&
-#     cell[:site].production > site.production && # go to higher production location
-#     cell[:site].strength+site.strength <= 260 &&
-#     at_border(map.find_location(loc, cell[:direction])) }
-#   .sort_by { |cell| -cell[:site].production }
-#   .first
+def help_production(site, loc)
+  target = GameMap::DIRECTIONS.map { |dir| {:direction => dir, :site => map.site(loc, dir)} }
+  .select { |cell|
+    cell[:site].owner == tag &&
+    cell[:site].production > site.production && # go to higher production location
+    cell[:site].strength+site.strength <= 260 &&
+    at_border?(map.find_location(loc, cell[:direction])) }
+  .sort_by { |cell| -cell[:site].production }
+  .first
 
-#   return {:help => false} if target.nil?
-#   return {:help => true, :direction => target[:direction], :site => target[:site]}
-# end
+  return {:help => false} if target.nil?
+  return {:help => true, :direction => target[:direction], :site => target[:site]}
+end
 
 def help_strength(site, loc)
   target = GameMap::DIRECTIONS.map { |dir| {:direction => dir, :site => map.site(loc, dir)} }
@@ -85,7 +98,7 @@ def help_strength(site, loc)
     cell[:site].owner == tag &&
     cell[:site].strength > site.strength && # weaker cells should reinforce stronger ones
     cell[:site].strength+site.strength <= 260 &&
-    at_border(map.find_location(loc, cell[:direction])) }
+    at_border?(map.find_location(loc, cell[:direction])) }
   .sort_by { |cell| -cell[:site].production }
   .first
 
@@ -113,7 +126,7 @@ def nearest_border_direction(loc)
   .first[:direction]
 end
 
-def at_border(loc)
+def at_border?(loc)
   GameMap::DIRECTIONS.any? {|d| map.site(loc, d).owner != tag}
 end
 
