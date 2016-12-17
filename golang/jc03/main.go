@@ -41,7 +41,7 @@ func move(loc hlt.Location) hlt.Move {
 	do, dir, target := getProductiveTarget(loc)
 	if do &&
 		(target.Strength < site.Strength ||
-			(target.Strength == site.Strength && site.Strength >= 255)) {
+			(target.Strength == site.Strength && site.Strength >= 250)) {
 		return hlt.Move{
 			Location:  loc,
 			Direction: dir,
@@ -82,13 +82,13 @@ func getNearestBorderDirection(loc hlt.Location) hlt.Direction {
 
 		for {
 			if site.Owner != conn.PlayerTag ||
-				distance > maxDistance {
+				distance >= maxDistance {
 				break
 			}
 
 			distance++
 			currLoc = gameMap.GetLocation(currLoc, d) // move 1 step into direction 'd'
-			site = gameMap.GetSite(currLoc, d)
+			site = gameMap.GetSite(currLoc, hlt.STILL)
 		}
 
 		if distance < maxDistance {

@@ -78,14 +78,14 @@ func nearestBorderDir(loc hlt.Location) hlt.Direction {
 
 		for {
 			if site.Owner != conn.PlayerTag ||
-				distance > maxDistance {
+				distance >= maxDistance {
 				break
 			}
 
 			distance++
 			// move 1 step into direction 'd'
 			currLoc = gameMap.GetLocation(currLoc, d)
-			site = gameMap.GetSite(currLoc, d)
+			site = gameMap.GetSite(currLoc, hlt.STILL)
 		}
 
 		// is it closer than previous border?
@@ -127,7 +127,7 @@ func target(loc hlt.Location) *hlt.Move {
 	// if good target found and cell is strong enough to attack, then do it!
 	if found &&
 		(targetSite.Strength < site.Strength ||
-			(targetSite.Strength == site.Strength && site.Strength >= 255)) {
+			(targetSite.Strength == site.Strength && site.Strength >= 250)) {
 		return &hlt.Move{
 			Location:  loc,
 			Direction: targetDir,
@@ -147,7 +147,7 @@ func help(loc hlt.Location) *hlt.Move {
 			cellLoc := gameMap.GetLocation(loc, dir)
 			if border(cellLoc) {
 				if cell.Strength > site.Strength && // weaker cells should reinforce stronger ones
-					cell.Strength+site.Strength <= 255 { // but only if not overflowing strength
+					cell.Strength+site.Strength <= 260 { // but only if not overflowing strength
 					return &hlt.Move{
 						Location:  loc,
 						Direction: dir,

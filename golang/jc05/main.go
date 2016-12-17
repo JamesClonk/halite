@@ -88,14 +88,14 @@ func nearestBorderDir(loc hlt.Location) hlt.Direction {
 
 		for {
 			if site.Owner != conn.PlayerTag ||
-				distance > maxDistance {
+				distance >= maxDistance {
 				break
 			}
 
 			distance++
 			// move 1 step into direction 'd'
 			currLoc = gameMap.GetLocation(currLoc, d)
-			site = gameMap.GetSite(currLoc, d)
+			site = gameMap.GetSite(currLoc, hlt.STILL)
 		}
 
 		// is it closer than previous border?
@@ -126,7 +126,7 @@ func target(loc hlt.Location) *hlt.Move {
 			// find best target we are strong enough to attack
 			if v > value &&
 				(target.Strength < site.Strength ||
-					(target.Strength == site.Strength && site.Strength >= 255)) {
+					(target.Strength == site.Strength && site.Strength >= 250)) {
 				targetDir = d
 				value = v
 				found = true

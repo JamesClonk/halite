@@ -29,7 +29,7 @@ def move(site, loc)
   target = productive_target(loc)
   if target[:ok] &&
     (target[:site].strength < site.strength ||
-      (target[:site].strength == site.strength && site.strength >= 250))
+      (target[:site].strength == site.strength && site.strength >= 255))
     return Move.new(loc, target[:dir])
   end
 
@@ -43,6 +43,10 @@ def move(site, loc)
 
   # can't attack, hold still
   return Move.new(loc, :still)
+end
+
+def evaluate_target(target)
+  return (target.production*10.5) / (target.strength+0.5)
 end
 
 def productive_target(loc)
@@ -80,10 +84,10 @@ def nearest_border_direction(loc)
     current = loc
     site = map.site(current, d)
 
-    while(site.owner == tag && distance < max_distance)
+    while(site.owner == tag && distance <= max_distance)
       distance = distance + 1
       current = map.find_location(current, d)
-      site = map.site(current)
+      site = map.site(current, d)
     end
 
     if distance < max_distance
