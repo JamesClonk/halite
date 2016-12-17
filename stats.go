@@ -66,7 +66,8 @@ func simulate(battles <-chan []string) {
 	for battle := range battles {
 		blue := battle[0]
 		red := battle[1]
-		command := []string{"./halite", "-t", "-q", "-d", "30 30", blue, red}
+		//command := []string{"./halite", "-t", "-q", "-d", "30 30", blue, red}
+		command := []string{"./halite", "-q", "-d", "30 30", blue, red}
 		log.Println(command)
 		cmd := exec.Command(command[0], command[1:]...)
 		output, err := cmd.CombinedOutput()

@@ -1,7 +1,8 @@
+require 'set'
 $:.unshift(File.dirname(__FILE__))
 require 'networking'
 
-$network, $tag, $map = nil
+$network, $tag, $map, $territory, $enemies = nil
 
 def network
   $network
@@ -15,13 +16,38 @@ def tag
   $tag
 end
 
+def territory
+  $territory
+end
+
+def enemies
+  $enemies
+end
+
 def init
   $network = Networking.new("jc06")
   $tag, $map = network.configure
 end
 
-def update_game_map
+def update_game
   $map = network.frame
+
+  owners = Set.new
+  count = 0
+
+  (0...map.height).each do |y|
+    (0...map.width).each do |x|
+      owner = map.content[x][y].owner
+      if owner == tag
+        count = count + 1
+      elsif owner != 0
+        owners << owner
+      end
+    end
+  end
+
+  $territory = count
+  $enemies = owners.to_a
 end
 
 def move(site, loc)
@@ -29,10 +55,8 @@ def move(site, loc)
   target = productive_target(site, loc)
   return Move.new(loc, target[:direction]) if target[:attack]
 
-  # wait to gather strength
-  if site.strength < site.production*5
-    return Move.new(loc, :still)
-  end
+  # wait to gather more strength
+  return Move.new(loc, :still) if needs_more_strength?(site)
 
   # lets go to the nearest border
   if !at_border?(loc)
@@ -48,6 +72,14 @@ def move(site, loc)
 
   # can't attack, hold still
   return Move.new(loc, :still)
+end
+
+def needs_more_strength?(site)
+  factor = 5.0
+  if territory > (1.0 * map.height * map.width / 3.0) * (1.0 / enemies.size)
+    factor = (1.0 * map.height * map.width / territory) + 1.5
+  end
+  return site.strength < site.production*factor
 end
 
 def allow_move?(site, loc, dir)
@@ -84,7 +116,7 @@ def help_production(site, loc)
     cell[:site].owner == tag &&
     cell[:site].production > site.production && # go to higher production location
     cell[:site].strength+site.strength <= 260 &&
-    at_border?(map.find_location(loc, cell[:direction])) }
+    at_border?(map.find_location(loc, cell[:direction])) } # only help cells which are at a border, not "inland"
   .sort_by { |cell| -cell[:site].production }
   .first
 
@@ -98,7 +130,7 @@ def help_strength(site, loc)
     cell[:site].owner == tag &&
     cell[:site].strength > site.strength && # weaker cells should reinforce stronger ones
     cell[:site].strength+site.strength <= 260 &&
-    at_border?(map.find_location(loc, cell[:direction])) }
+    at_border?(map.find_location(loc, cell[:direction])) } # only help cells which are at a border, not "inland"
   .sort_by { |cell| -cell[:site].production }
   .first
 
@@ -113,6 +145,11 @@ def nearest_border_direction(loc)
     distance = 0
     current = loc
     site = map.site(current, direction)
+
+    # maybe find alternative route if we can't move in this direction anyway?
+    if site.strength + map.site(loc).strength > 260
+      distance = distance + 1
+    end
 
     while(site.owner == tag && distance < max_distance)
       distance = distance + 1
@@ -135,7 +172,7 @@ def main
 
   while true
     moves = []
-    update_game_map
+    update_game
 
     (0...map.height).each do |y|
       (0...map.width).each do |x|
