@@ -13,6 +13,7 @@ cp move.rb output/.
 cp networking.rb output/.
 cp site.rb output/.
 cp $1.rb output/MyBot.rb
+echo "Malbolge" > output/LANGUAGE
 
 pushd output
 zip MyBot *
