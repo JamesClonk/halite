@@ -26,12 +26,8 @@ end
 
 def move(site, loc)
   # go to productive targets first
-  target = productive_target(loc)
-  if target[:ok] &&
-    (target[:site].strength < site.strength ||
-      (target[:site].strength == site.strength && site.strength >= 250))
-    return Move.new(loc, target[:dir])
-  end
+  target = productive_target(site, loc)
+  return Move.new(loc, target[:dir]) if target[:attack]
 
   # wait to gather strength
   if site.strength < site.production*5
@@ -45,30 +41,24 @@ def move(site, loc)
   return Move.new(loc, :still)
 end
 
-def productive_target(loc)
-  ok = false
-  target_site = nil
-  target_dir = nil
-  value = -1.0
+def evaluate_target(target)
+  return (target.production*1.0) unless target.strength > 0
+  return (target.production*1.0) / (target.strength*1.0)
+end
 
-  GameMap::DIRECTIONS.each do |d|
-    target = map.site(loc, d)
-    if target.owner != tag
-      v = target.production*1.0
-      if target.strength > 0
-        v = (target.production*1.0) / (target.strength*1.0)
-      end
+def productive_target(site, loc)
+  target = GameMap::DIRECTIONS.map { |dir| {:direction => dir, :site => map.site(loc, dir)} }
+  .select { |cell| cell[:site].owner != tag }
+  .sort_by { |cell| -evaluate_target(cell[:site]) }
+  .first
 
-      if v > value
-        target_dir = d
-        target_site = target
-        value = v
-        ok = true
-      end
-    end
+  return {:attack => false} if target.nil?
+
+  if target[:site].strength > site.strength ||
+    (target[:site].strength == site.strength && site.strength < 250)
+    return {:attack => false}
   end
-
-  return {:ok => ok, :dir => target_dir, :site => target_site}
+  return {:attack => true, :dir => target[:direction], :site => target[:site]}
 end
 
 def nearest_border_direction(loc)
