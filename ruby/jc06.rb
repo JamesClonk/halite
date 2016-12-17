@@ -34,17 +34,17 @@ def move(site, loc)
     return Move.new(loc, :still)
   end
 
-  # does a cell around me need help?
-  help = help_strength(site, loc)
-  return Move.new(loc, help[:direction]) if help[:help]
-  help = help_production(site, loc)
-  return Move.new(loc, help[:direction]) if help[:help]
-
   # lets go to the nearest border
   if !at_border?(loc)
     border_dir = nearest_border_direction(loc)
     return Move.new(loc, border_dir) if allow_move?(site, loc, border_dir)
   end
+
+  # does a cell around me need help?
+  help = help_strength(site, loc)
+  return Move.new(loc, help[:direction]) if help[:help]
+  help = help_production(site, loc)
+  return Move.new(loc, help[:direction]) if help[:help]
 
   # can't attack, hold still
   return Move.new(loc, :still)
