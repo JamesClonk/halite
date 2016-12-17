@@ -25,7 +25,7 @@ def enemies
 end
 
 def init
-  $network = Networking.new("jc07")
+  $network = Networking.new("jc06_mk3")
   $tag, $map = network.configure
 end
 
@@ -140,31 +140,6 @@ def help_strength(site, loc)
 
   return {:help => false} if target.nil?
   return {:help => true, :direction => target[:direction], :site => target[:site]}
-end
-
-def most_productive_border_direction(loc)
-  max_distance = [map.width, map.height].min / 2
-
-  GameMap::CARDINALS.map do |direction|
-    distance = 0
-    current = loc
-    site = map.site(current, direction)
-
-    # maybe find alternative route if we can't move in this direction anyway?
-    if site.strength + map.site(loc).strength > 260
-      distance += 1
-    end
-
-    while(site.owner == tag && distance < max_distance)
-      distance += 1
-      current = map.find_location(current, direction)
-      site = map.site(current)
-    end
-
-    {:distance => distance, :direction => direction, :site => site, :location => current}
-  end
-  .sort_by { |cell| -(evaluate_production(cell) / cell[:distance]) }
-  .first[:direction]
 end
 
 def evaluate_production(cell)
