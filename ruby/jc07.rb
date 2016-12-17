@@ -142,6 +142,45 @@ def help_strength(site, loc)
   return {:help => true, :direction => target[:direction], :site => target[:site]}
 end
 
+def most_productive_border_direction(loc)
+  max_distance = [map.width, map.height].min / 2
+
+  GameMap::DIRECTIONS.map do |direction|
+    distance = 0
+    current = loc
+    site = map.site(current, direction)
+
+    # maybe find alternative route if we can't move in this direction anyway?
+    if site.strength + map.site(loc).strength > 260
+      distance += 1
+    end
+
+    while(site.owner == tag && distance < max_distance)
+      distance += 1
+      current = map.find_location(current, direction)
+      site = map.site(current)
+    end
+
+    {:distance => distance, :direction => direction, :site => site, :location => current}
+  end
+  .sort_by { |cell| -(evaluate_production(cell) / cell[:distance]) }
+  .first[:direction]
+end
+
+def evaluate_production(cell)
+  production = 0.5
+  if cell[:site].owner != tag
+    production += cell[:site].production
+  end
+  GameMap::DIRECTIONS.each do |direction|
+    site = map.site(cell[:location], direction)
+    if site.owner != tag
+      production += map.site(cell[:location], direction).production
+    end
+  end
+  return production
+end
+
 def nearest_border_direction(loc)
   max_distance = [map.width, map.height].min / 2
 
@@ -161,9 +200,9 @@ def nearest_border_direction(loc)
       site = map.site(current)
     end
 
-    {:distance => distance, :direction => direction, :site => site}
+    {:distance => distance, :direction => direction, :site => site, :location => current}
   end
-  .sort_by { |cell| [cell[:distance], -cell[:site].production] }
+  .sort_by { |cell| [cell[:distance], -evaluate_production(cell)] }
   .first[:direction]
 end
 
